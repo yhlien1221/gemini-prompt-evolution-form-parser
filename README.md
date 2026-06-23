@@ -1,4 +1,4 @@
-# 🚀 FormEvolve-AI: Multimodal Form Parser with Prompt Self-Evolution Loop
+# FormEvolve-AI: Multimodal Form Parser with Prompt Self-Evolution Loop
 
 An intelligent, production-ready document processing framework leveraging **Gemini 2.5 Flash** and **Pydantic Structured Outputs**. It extracts clean, structured JSON data directly from complex, noisy document forms without relying on traditional, fragile OCR text-splitting pipelines. 
 
@@ -29,9 +29,9 @@ flowchart TD
 
     C --> D{Score ≥ 85%?}
 
-    D -->|Yes| E[🎉 SUCCESS<br/>Save Final Golden Prompt]
+    D -->|Yes| E[SUCCESS<br/>Save Final Golden Prompt]
 
-    D -->|No| F[🧠 CRITIQUE GENERATION]
+    D -->|No| F[CRITIQUE GENERATION]
 
     F --> G[3. THE JUDGE<br/>Gemini 2.5 Prompt Meta-Optimizer]
 
@@ -53,7 +53,7 @@ flowchart TD
 
 
 
-### 🧱 Detailed Step-by-Step Execution
+### Detailed Step-by-Step Execution
 
 1. **Phase 1 - Structured Schema Binding**: The system binds Gemini's response directly to a strict Pydantic contract (`ExtractedForm` containing a list of `KeyValuePair`). This forces the LLM to output predictable, clean JSON arrays while filtering out conversational conversational noise.
 2. **Phase 2 - Multimodal Execution (The Worker)**: The Worker takes the image and the *current generation prompt* to perform visual entity extraction at a very stable temperature ($0.1$) to maximize consistency.
