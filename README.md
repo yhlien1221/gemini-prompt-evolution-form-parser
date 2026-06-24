@@ -1,4 +1,4 @@
-# FormEvolve-AI: Multimodal Form Parser with Prompt Self-Evolution Loop
+# PromptEvolve: The Self-Optimizing Document Parser
 
 An intelligent, production-ready document processing framework leveraging **Gemini 2.5 Flash** and **Pydantic Structured Outputs**. It extracts clean, structured JSON data directly from complex, noisy document forms without relying on traditional, fragile OCR text-splitting pipelines. 
 
