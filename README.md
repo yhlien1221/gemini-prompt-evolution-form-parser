@@ -1,80 +1,122 @@
-# PromptEvolve: The Self-Optimizing Document Parser
+# PromptEvolve: Self-Optimizing Document Parsing with Gemini
 
-An intelligent, production-ready document processing framework leveraging **Gemini 2.5 Flash** and **Pydantic Structured Outputs**. It extracts clean, structured JSON data directly from complex, noisy document forms without relying on traditional, fragile OCR text-splitting pipelines. 
+PromptEvolve explores whether an LLM can improve its own prompts through an automated feedback loop. Instead of manually tuning prompts, the system evaluates each extraction against a ground-truth dataset and refines its own prompt based on previous mistakes.
 
-The core innovation of this project is an automated **"Worker-Grader-Judge" Prompt Self-Evolution Loop**—an optimization architecture that analyzes its own extraction errors, learns layout anomalies, and dynamically re-engineers its own system instructions until it achieves flawless accuracy.
+The project implements a **Worker–Grader–Judge** architecture:
 
----
-
-## The Enterprise Pain Point & Our Solution
-
-Traditional Intelligent Document Processing (IDP) frameworks rely on a fragile two-step pipeline: **OCR Text Extraction ➔ Text-based NLP Parsing**. This approach brittlely breaks down when encountering complex spatial layouts, handwriting, horizontal alignment shifts, or inline tabular lists.
-
-**FormEvolve-AI** solves this by treating form parsing as a unified multimodal task. Gemini directly looks at the document image, comprehends layout and text concurrently, and runs an automated feedback loop to perfect its parsing instructions on the fly without any manual prompt tuning.
+- **Worker** extracts structured JSON from document images using Gemini 2.5 Flash.
+- **Grader** compares the output with the ground-truth annotations and calculates an accuracy score.
+- **Judge** analyzes recurring errors and rewrites the system prompt for the next iteration.
 
 ---
 
-## Core System Architecture & Iterative Workflow
+# Results
 
-The framework implements a meta-cognitive optimization loop featuring three synchronized architectural roles collaborating iteratively:
+**Dataset**
+- FUNSD (Form Understanding in Noisy Scanned Documents) from Hugging Face
+
+**Accuracy**
+- Initial prompt: **65%**
+- Final prompt: **78%**
+
+**Prompt Evolution**
+- Total generations: **3**
+
+> **Experiment note:** This demo was intentionally limited to three optimization rounds because it was developed using the Gemini 2.5 Flash free-tier API. The framework supports additional iterations when higher API quotas are available.
+
+---
+
+# Why?
+
+Traditional document extraction pipelines usually separate OCR from text parsing. While this works well for clean documents, it often struggles with handwritten text, multi-column layouts, and visually complex forms.
+
+PromptEvolve approaches document parsing as a multimodal task. Instead of relying on OCR text alone, Gemini processes the document image directly and improves its extraction prompt through an automated feedback loop.
+
+---
+
+# Architecture
+
+The framework implements an iterative prompt optimization loop.
 
 ```mermaid
 flowchart TD
 
-    A[Document Image + Initial Prompt Seed]
+    A[Document Image + Initial Prompt]
 
-    A --> B[1. THE WORKER<br/>Gemini 2.5 Flash<br/>Views image layout and generates structured JSON]
+    A --> B[1. Worker<br/>Gemini 2.5 Flash<br/>Extract Structured JSON]
 
-    B --> C[2. THE GRADER<br/>Python Programmatic Quality Gate<br/>Evaluates JSON against Golden Ground Truth]
+    B --> C[2. Grader<br/>Python Evaluation<br/>Compare with Ground Truth]
 
-    C --> D{Score ≥ 85%?}
+    C --> D{Accuracy ≥ 85%?}
 
-    D -->|Yes| E[SUCCESS<br/>Save Final Golden Prompt]
+    D -->|Yes| E[Save Final Prompt]
 
-    D -->|No| F[CRITIQUE GENERATION]
+    D -->|No| F[Generate Error Report]
 
-    F --> G[3. THE JUDGE<br/>Gemini 2.5 Prompt Meta-Optimizer]
+    F --> G[3. Judge<br/>Gemini Prompt Optimizer]
 
-    G --> H[Diagnose Error Patterns]
+    G --> H[Analyze Errors]
 
-    H --> I[Invent Layout Constraints]
+    H --> I[Update Prompt]
 
-    I --> J[Evolve Prompt for Next Generation]
-
-    J --> B
+    I --> B
 ```
 
+---
 
+# How It Works
 
+### 1. Structured Output
 
+Gemini is constrained with a Pydantic schema (`ExtractedForm` → `KeyValuePair`) to ensure consistent JSON output.
 
+### 2. Document Parsing (Worker)
 
+The Worker receives the document image together with the current system prompt and extracts structured key-value pairs using Gemini 2.5 Flash.
 
+### 3. Evaluation (Grader)
 
+A Python evaluator compares the extracted JSON against the FUNSD ground-truth annotations and computes an accuracy score while recording missing or incorrect fields.
 
+### 4. Prompt Refinement (Judge)
 
-### Detailed Step-by-Step Execution
-
-1. **Phase 1 - Structured Schema Binding**: The system binds Gemini's response directly to a strict Pydantic contract (`ExtractedForm` containing a list of `KeyValuePair`). This forces the LLM to output predictable, clean JSON arrays while filtering out conversational conversational noise.
-2. **Phase 2 - Multimodal Execution (The Worker)**: The Worker takes the image and the *current generation prompt* to perform visual entity extraction at a very stable temperature ($0.1$) to maximize consistency.
-3. **Phase 3 - Programmatic Quality Gate (The Grader)**: A deterministic Python grading function intersects the Worker's JSON against a human-verified **Golden Ground Truth dataset**. It outputs an exact mathematical accuracy score and standardizes missing fields into a structured error log.
-4. **Phase 4 - Prompt Mutation & Evolution (The Judge)**: If accuracy targets are unmet, the Judge agent interprets the raw error strings. Acting as an expert Prompt Engineer, it auto-mutates the prompt text, embedding custom instructions (e.g., *specifying column rules, handling complex inline list colons, or scanning independent boundary stamps*), and feeds the upgraded prompt back into Phase 2 after a safety cooldown.
+When the target accuracy is not reached, the Judge analyzes the evaluation results and updates the system prompt with more specific extraction instructions. The refined prompt is then used in the next generation.
 
 ---
 
-## Advanced Technical Highlights Included in the Script
+# Tech Stack
 
-* **Knowledge Distillation Design**: Showcases a production-level architecture where high-tier conceptual verification (Golden Dataset) is used to systematically upgrade cheaper, low-latency models (`Gemini 2.5 Flash`).
-* **Production Rate-Limiting**: Implements proactive telemetry pauses (`time.sleep(6)`) within loops to perfectly respect Google Free-Tier API thresholds (15 RPM limits) without crash failures.
-* **Inline Dynamic List Generalization**: Includes general prompt injection semantics capable of extracting multi-identifier horizontal line-items (`"Item Name" Code :Metric`) without corrupting string splits or dropping numeric metrics.
-* **Full Iteration History Auditing**: Caches a robust log dictionary compiling exact tracking metrics, grading outcomes, and prompt transformations across generations, providing comprehensive observability.
-
+- Python
+- Gemini 2.5 Flash
+- Google GenAI SDK
+- Pydantic
+- Hugging Face Datasets
 
 ---
 
-## Setup & Local Quickstart
+# Implementation Details
 
-### Prerequisites
-Install the modernized Google GenAI SDK, data schemas, and vision libraries:
+- Structured JSON output with Pydantic
+- Automatic prompt refinement
+- Ground-truth dataset evaluation
+- Iteration logging
+- Gemini multimodal document parsing
+
+---
+
+# Key Takeaways
+
+- Built a multimodal document parser using Gemini 2.5 Flash.
+- Designed a Worker–Grader–Judge feedback loop for automatic prompt optimization.
+- Evaluated prompt quality using the FUNSD benchmark.
+- Improved extraction accuracy from **65%** to **78%** without manually rewriting prompts.
+
+---
+
+# Setup
+
+## Prerequisites
+
 ```bash
 pip install google-genai pydantic pillow datasets -q
+```
