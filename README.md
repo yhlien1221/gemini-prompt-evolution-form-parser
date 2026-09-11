@@ -26,7 +26,7 @@ The project implements a **Worker–Grader–Judge** architecture:
 
 ---
 
-# Why?
+# Why??
 
 Traditional document extraction pipelines usually separate OCR from text parsing. While this works well for clean documents, it often struggles with handwritten text, multi-column layouts, and visually complex forms.
 
@@ -119,4 +119,5 @@ When the target accuracy is not reached, the Judge analyzes the evaluation resul
 
 ```bash
 pip install google-genai pydantic pillow datasets -q
+
 ```
